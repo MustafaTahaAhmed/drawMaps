@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw Map</title>
+    <style>
+        html, body, #map {
+            height: 92vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #title{
+            height: 8vh;
+            width: 100%;
+            margin: 0;
+            padding: 0; 
+            display: flex; 
+            
+            
+        }
+       
+    </style>
+</head>
+<body>
+    
+    <div id="title">
+        <img src="giz-logo.gif" style="padding: 5px;">
+        <textarea rows="2" cols="50"  style="font-family:Arial, Helvetica, sans-serif;color:#020516;white-space:pre-wrap; padding: 1.5%; font-size:larger; border: none; overflow:auto">This is the map title</textarea>
+        <H3 id="month" style= "position: absolute; right: 2%;"></H3>
+    </div>
+    <div id="map"></div>
+    <script>
+        const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        
+        const d = new Date();
+        let name = month[d.getMonth()];
+        document.getElementById("month").innerHTML =  name+" 2024";
+        </script>
+</body>
+</html>
+
+<!-- leaflet js  -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"></script>
+
+<!-- Bring in the leaflet KML plugin -->
+<script src="https://harrywood.co.uk/maps/examples/leaflet/leaflet-plugins/layer/vector/KML.js"></script>  
+
+<!-- leaflet draw plugin  -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.js"></script>
+
+<script>
+    // Initialize the map
+    var map = L.map('map').setView([35.17050820522636, 38.60489919031477], 8);
+    
+    // Add the OpenStreetMap tiles
+    var esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: ' &copy; Mustafa Taha Ahmed'
+    })
+    esri.addTo(map);
+    var noBorders = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+	attribution: ' &copy; Mustafa Taha Ahmed',
+	ext: 'png'
+});
+
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+	attribution: ' &copy; Mustafa Taha Ahmed'
+});
+
+
+ 
+
+    // leaflet draw 
+    var drawnFeatures = new L.FeatureGroup();
+    map.addLayer(drawnFeatures);
+
+    var drawControl = new L.Control.Draw({
+        // position: "topright",
+        edit: {
+            featureGroup: drawnFeatures           
+        },
+        draw: {
+		    polygon: {
+		     shapeOptions: {
+		      color: 'purple'
+		     },
+		    },
+		    polyline: {
+		     shapeOptions: {
+		      color: 'red'
+		     },
+		    },
+		    rect: {
+		     shapeOptions: {
+		      color: 'green'
+		     },
+		    },
+		    circle: {
+		     shapeOptions: {
+		      color: 'steelblue'
+		     },
+		    },
+            Point: {
+		     shapeOptions: {
+		      color: 'black',
+              
+		     },
+		    },
+		   },
+ 
+    });
+    map.addControl(drawControl);
+
+    map.on("draw:created", function(e){
+        var type = e.layerType;
+        var layer = e.layer;
+        console.log(layer.toGeoJSON())
+        
+        var content = document.createElement("textarea");
+
+        layer.bindPopup(content, {
+            keepInView: true,
+        closeButton: true,
+        autoClose: false,
+        closeOnClick: null,
+        closePopupsOnPrint: false,
+        }).openPopup();
+
+        drawnFeatures.addLayer(layer);
+
+     
+    });
+
+    map.on("draw:edited", function(e){
+        var layers = e.layers;
+        var type = e.layerType;
+
+        layers.eachLayer(function(layer){
+            console.log(layer)
+        })
+        
+    })
+
+    var districtStyle = {
+      fillColor: "#00FFFFFF",
+      weight: 1,
+      opacity: 1,
+      color: "#000000",
+      fillOpacity:0.00
+    };
+
+    var SDFStyle = {
+      fillColor: "#FFFF2E",
+      weight: 1,
+      opacity: 1,
+      color: "#FFFF2E",
+      fillOpacity:0.20
+    };
+
+    var SNAStyle = {
+      fillColor: "#24bdd1",
+      weight: 1,
+      opacity: 1,
+      color: "#24bdd1",
+      fillOpacity:0.20
+    };
+    var HTSStyle = {
+      fillColor: "#065709",
+      weight: 1,
+      opacity: 1,
+      color: "#065709",
+      fillOpacity:0.20
+    };
+    var RegimeStyle = {
+      fillColor: "#222326",
+      weight: 1,
+      opacity: 1,
+      color: "#222326",
+      fillOpacity:0.20
+    };
+    var TanfStyle = {
+      fillColor: "#031701",
+      weight: 1,
+      opacity: 1,
+      color: "#031701",
+      fillOpacity:0.20
+    };
+ var SDF = new L.KML("SDF.kml", {async: true});
+                                                              
+         SDF.on("loaded", function(e) { 
+            map.fitBounds(e.target.getBounds());
+            this.setStyle(SDFStyle)
+        });
+        
+     
+   var SNA = new L.KML("SNA.kml", {async: true});
+                                                              
+        SNA.on("loaded", function(e) { 
+            map.fitBounds(e.target.getBounds());
+            this.setStyle(SNAStyle)
+        });
+
+    var HTS = new L.KML("HTS.kml", {async: true});
+                                                              
+         HTS.on("loaded", function(e) { 
+            map.fitBounds(e.target.getBounds());
+            this.setStyle(HTSStyle)
+        });                                             
+   var Regime = new L.KML("Regime.kml", {async: true});
+                                                              
+         Regime.on("loaded", function(e) { 
+            map.fitBounds(e.target.getBounds());
+            this.setStyle(RegimeStyle)
+        });   
+var Tanf = new L.KML("Tanf.kml", {async: true});
+                                                              
+         Regime.on("loaded", function(e) { 
+            map.fitBounds(e.target.getBounds());
+            this.setStyle(TanfStyle)
+        });   
+     /*var Governorate = new L.KML("Governorate.kml", {async: true});                                                   
+     Governorate.on("loaded", function(e) { 
+      map.fitBounds(e.target.getBounds());
+       });*/
+
+      var District = new L.KML("District.kml", {async: true});
+                                                              
+      District.on("loaded", function(e) { 
+    map.fitBounds(e.target.getBounds());
+    this.setStyle(districtStyle);
+      });       
+      
+
+   //Layer Control
+
+   var basemap = {
+    'Esri': esri,
+    'Open Street Map': osm,
+    'No Labels': noBorders,
+   }
+ 
+   
+    var layersCont = {
+    'District': District,
+    'SDF': SDF,
+    'SNA': SNA,
+    'HTS': HTS,
+    'Regime':Regime,
+    'Tanf':Tanf,
+    /*'Governorate': Governorate,*/
+    
+    
+ }
+    
+ 
+ 
+ L.control.layers(basemap,layersCont).addTo(map); 
+
+    
+
+
+
+ 
+</script>
